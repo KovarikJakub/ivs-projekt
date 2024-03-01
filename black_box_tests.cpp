@@ -38,33 +38,50 @@
 // TEST - Klasicky ytest
 // TEST_F - Test pro Fixture
 
-class EmptyTree : public ::testing::Test
+using namespace ::testing;
+
+class EmptyTree : public Test
 {
-    
+protected:
     void SetUp() override 
     {
+    }
+
+    std::vector<Node_t*> GetAllNodes() 
+    {
+        std::vector<Node_t*> leafNodes;
+        instance.GetAllNodes(leafNodes);
+        return leafNodes;
     }
 
     BinaryTree instance;
 };
 
-TEST(EmptyTree, InsertNode){
+TEST_F(EmptyTree, InsertNode){
 
     // ARRANGE
     const int key = 2;
-    BinaryTree binaryTree;
 
     // ACT
-    binaryTree.InsertNode(key);
+    const auto resultPair = instance.InsertNode(key);
 
     // ASSERT
-    std::vector<Node_t*> outLeafNodes;
-    binaryTree.GetLeafNodes(outLeafNodes);
+    ASSERT_TRUE(resultPair.first);
+    EXPECT_NE(resultPair.second, nullptr);
 
-    const auto firstNode = outLeafNodes[0];
+    const auto allNodes = GetAllNodes();
+     auto firstNode = allNodes[0];
 
-    EXPECT_EQ(outLeafNodes.size(), 1);
-    EXPECT_NE(firstNode, nullptr);
+    ASSERT_NE(firstNode, nullptr);
+    ASSERT_EQ(firstNode->pLeft, nullptr);
+    ASSERT_EQ(firstNode->pRight, nullptr);
+    ASSERT_EQ(firstNode->pParent, nullptr);
+    EXPECT_THAT(allNodes, UnorderedElementsAre(Field(&Node_t::key, 1),
+                                               Field(&Node_t::key, 0),
+                                               Field(&Node_t::key, 0)));
+    const auto leftLeaf = firstNode->pLeft;
+    const auto rightLeaf = firstNode->pRight;
+
 }
 
 TEST(EmptyTree, DeleteNode)
