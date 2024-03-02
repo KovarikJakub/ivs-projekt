@@ -16,7 +16,6 @@
 #include <vector>
 
 #include "gtest/gtest.h"
-
 #include "red_black_tree.h"
 #include <gmock/gmock.h>
 
@@ -83,21 +82,16 @@ TEST_F(EmptyTree, InsertNode){
     const auto rightLeaf = firstNode->pRight;
 }
 
-TEST(EmptyTree, DeleteNode)
+TEST_F(EmptyTree, DeleteNode)
 {
-    // ARRANGE
-    const int key = 17
-
-    // ACT
-    EXPECT_EQ(binaryTree.DeleteNode(key));
-    
-    // ASSERT
-
-    std::vector<Node_t*> outAllNodes;
-    binaryTree.GetAllNodes(outAllNodes);
-    EXPECT_EQ(outAllNodes.empty(), true);
+    EXPECT_FALSE(instance.DeleteNode(17));
+    EXPECT_TRUE(GetAllNodes().empty());
 }
 
+TEST_F(EmptyTree, FindNode)
+{
+    instance.
+}
 
 class NonEmptyTree : public ::testing::Test
 {
