@@ -75,7 +75,7 @@ TEST_F(EmptyTree, InsertNode){
     ASSERT_NE(firstNode->pLeft, nullptr);
     ASSERT_NE(firstNode->pRight, nullptr);
     ASSERT_EQ(firstNode->pParent, nullptr);
-    EXPECT_THAT(allNodes, UnorderedElementsAre(Field(&Node_t::key, 1),
+    EXPECT_THAT(allNodes, UnorderedElementsAre(Field(&Node_t::key, 2),
                                                Field(&Node_t::key, 0),
                                                Field(&Node_t::key, 0)));
     const auto leftLeaf = firstNode->pLeft;
