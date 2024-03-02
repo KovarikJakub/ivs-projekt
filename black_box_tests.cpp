@@ -56,7 +56,7 @@ protected:
 
     BinaryTree instance;
 };
-
+ 
 TEST_F(EmptyTree, InsertNode){
 
     // ARRANGE
@@ -81,19 +81,17 @@ TEST_F(EmptyTree, InsertNode){
                                                Field(&Node_t::key, 0)));
     const auto leftLeaf = firstNode->pLeft;
     const auto rightLeaf = firstNode->pRight;
-
 }
 
 TEST(EmptyTree, DeleteNode)
 {
     // ARRANGE
-    BinaryTree binaryTree;
+    const int key = 17
 
     // ACT
-    bool deleteResult = binaryTree.DeleteNode(17);
+    EXPECT_EQ(binaryTree.DeleteNode(key));
     
     // ASSERT
-    EXPECT_EQ(deleteResult, false);
 
     std::vector<Node_t*> outAllNodes;
     binaryTree.GetAllNodes(outAllNodes);
