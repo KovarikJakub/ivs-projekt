@@ -90,7 +90,7 @@ TEST_F(EmptyTree, DeleteNode)
 
 TEST_F(EmptyTree, FindNode)
 {
-    instance.
+    EXPECT_EQ( instance.FindNode(1), nullptr);
 }
 
 class NonEmptyTree : public ::testing::Test
