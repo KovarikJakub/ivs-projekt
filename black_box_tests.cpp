@@ -72,8 +72,8 @@ TEST_F(EmptyTree, InsertNode){
      auto firstNode = allNodes[0];
 
     ASSERT_NE(firstNode, nullptr);
-    ASSERT_EQ(firstNode->pLeft, nullptr);
-    ASSERT_EQ(firstNode->pRight, nullptr);
+    ASSERT_NE(firstNode->pLeft, nullptr);
+    ASSERT_NE(firstNode->pRight, nullptr);
     ASSERT_EQ(firstNode->pParent, nullptr);
     EXPECT_THAT(allNodes, UnorderedElementsAre(Field(&Node_t::key, 1),
                                                Field(&Node_t::key, 0),
