@@ -65,12 +65,27 @@ protected:
 //
 // EMPTY TREE TESTS
 
-class EmptyTree : public BinaryTreeFixtureBase
+class EmptyTree : public Test //public BinaryTreeFixtureBase
 {
 protected:
     void SetUp() override 
     {
     }
+        std::vector<Node_t*> GetAllNodes() 
+    {
+        std::vector<Node_t*> allNodes;
+        instance.GetAllNodes(allNodes);
+        return allNodes;
+    }
+
+    std::vector<Node_t*> GetLeafNodes() 
+    {
+        std::vector<Node_t*> leafNodes;
+        instance.GetLeafNodes(leafNodes);
+        return leafNodes;
+    }
+
+    BinaryTree instance;
 
 };
  
@@ -114,7 +129,7 @@ TEST_F(EmptyTree, FindNode)
 //
 // NON-EMPTY TREE TEST
 
-class NonEmptyTree : public BinaryTreeFixtureBase
+class NonEmptyTree : public Test //public BinaryTreeFixtureBase
 {
     protected:
     void SetUp() override 
@@ -122,6 +137,22 @@ class NonEmptyTree : public BinaryTreeFixtureBase
         const auto initialKeys = {1,2,3};
         instance.InsertNodes(initialKeys, outInitialNodes);
     }
+
+    std::vector<Node_t*> GetAllNodes() 
+    {
+        std::vector<Node_t*> allNodes;
+        instance.GetAllNodes(allNodes);
+        return allNodes;
+    }
+
+    std::vector<Node_t*> GetLeafNodes() 
+    {
+        std::vector<Node_t*> leafNodes;
+        instance.GetLeafNodes(leafNodes);
+        return leafNodes;
+    }
+
+    BinaryTree instance;
 
     std::vector<std::pair<bool, Node_t*>> outInitialNodes;
 };
@@ -183,22 +214,11 @@ TEST_F(NonEmptyTree, FindNode)
 
 TEST_F(NonEmptyTree, DeleteNode)
 {
-    // Delete existing node:
-    int keyToDelete = 3;
-    
-    EXPECT_TRUE(instance.DeleteNode(keyToDelete));
-    EXPECT_EQ(GetLeafNodes(), 3);
-    EXPECT_THAT(GetAllNodes(), UnorderedElementsAre(Field(&Node_t::key, 1),
-                                                    Field(&Node_t::key, 2),
-                                                    Field(&Node_t::key, 0),
-                                                    Field(&Node_t::key, 0),
-                                                    Field(&Node_t::key, 0)));
-
     // Delete a non-existing node:
-    keyToDelete = 9;
+    int keyToDelete = 9;
     
     EXPECT_FALSE(instance.DeleteNode(keyToDelete));
-    EXPECT_EQ(GetLeafNodes(), 4);
+    EXPECT_EQ(GetLeafNodes().size(), 4);
     EXPECT_THAT(GetAllNodes(), UnorderedElementsAre(Field(&Node_t::key, 1),
                                                     Field(&Node_t::key, 2),
                                                     Field(&Node_t::key, 3),
@@ -206,6 +226,17 @@ TEST_F(NonEmptyTree, DeleteNode)
                                                     Field(&Node_t::key, 0),
                                                     Field(&Node_t::key, 0),
                                                     Field(&Node_t::key, 0)));
+    // Delete existing node:
+    keyToDelete = 3;
+    
+    EXPECT_TRUE(instance.DeleteNode(keyToDelete));
+    EXPECT_EQ(GetLeafNodes().size(), 3);
+    EXPECT_THAT(GetAllNodes(), UnorderedElementsAre(Field(&Node_t::key, 1),
+                                                    Field(&Node_t::key, 2),
+                                                    Field(&Node_t::key, 0),
+                                                    Field(&Node_t::key, 0),
+                                                    Field(&Node_t::key, 0)));
+
 }
 
 
