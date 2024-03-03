@@ -39,37 +39,54 @@
 
 using namespace ::testing;
 
-class EmptyTree : public Test
+// common base class for our fixture classes.
+// allows for easy accesss to leaf nodes or all nodes.
+class BinaryTreeFixtureBase : public Test
+{
+protected:
+    std::vector<Node_t*> GetAllNodes() 
+    {
+        std::vector<Node_t*> allNodes;
+        instance.GetAllNodes(allNodes);
+        return allNodes;
+    }
+
+    std::vector<Node_t*> GetLeafNodes() 
+    {
+        std::vector<Node_t*> leafNodes;
+        instance.GetLeafNodes(leafNodes);
+        return leafNodes;
+    }
+
+    BinaryTree instance;
+};
+
+//
+//
+// EMPTY TREE TESTS
+
+class EmptyTree : public BinaryTreeFixtureBase
 {
 protected:
     void SetUp() override 
     {
     }
 
-    std::vector<Node_t*> GetAllNodes() 
-    {
-        std::vector<Node_t*> leafNodes;
-        instance.GetAllNodes(leafNodes);
-        return leafNodes;
-    }
-
-    BinaryTree instance;
 };
  
 TEST_F(EmptyTree, InsertNode){
 
-    // ARRANGE
     const int key = 2;
 
-    // ACT
     const auto resultPair = instance.InsertNode(key);
 
-    // ASSERT
     ASSERT_TRUE(resultPair.first);
     EXPECT_NE(resultPair.second, nullptr);
 
+    EXPECT_EQ(GetLeafNodes().size(), 2);
+
     const auto allNodes = GetAllNodes();
-     auto firstNode = allNodes[0];
+    const auto firstNode = allNodes[0];
 
     ASSERT_NE(firstNode, nullptr);
     ASSERT_NE(firstNode->pLeft, nullptr);
@@ -93,88 +110,179 @@ TEST_F(EmptyTree, FindNode)
     EXPECT_EQ( instance.FindNode(1), nullptr);
 }
 
-class NonEmptyTree : public ::testing::Test
+//
+//
+// NON-EMPTY TREE TEST
+
+class NonEmptyTree : public BinaryTreeFixtureBase
 {
     protected:
     void SetUp() override 
     {
-        const auto initialKeys = {1,2,3,4,5};
+        const auto initialKeys = {1,2,3};
         instance.InsertNodes(initialKeys, outInitialNodes);
     }
 
-    void TearDown() override 
-    {
-    }
-
-    BinaryTree instance;
     std::vector<std::pair<bool, Node_t*>> outInitialNodes;
 };
 
-TEST_F(NonEmptyTree, InsertNode_Existing)
+TEST_F(NonEmptyTree, InsertNode)
 {
-    // ARRANGE
-    const auto keyToInsert = 3;
+    // Insert a existing node:
+    auto keyToInsert = 3;
 
-    // ACT
-    const auto outNode = instance.InsertNode(keyToInsert);
+    auto resultPair = instance.InsertNode(keyToInsert);
+    EXPECT_FALSE(resultPair.first); 
+    EXPECT_NE(resultPair.second, nullptr);
 
-    // ASSERT
-    EXPECT_NE(outNode.second, nullptr);
-    EXPECT_FALSE(outNode.first);
-}
+    EXPECT_THAT(GetLeafNodes().size(), 4);
 
-TEST_F(NonEmptyTree, FindNode_Existing)
-{
-    // ARRANGE
-    const int keyToFind = 3;
+    EXPECT_THAT(GetAllNodes(), UnorderedElementsAre(Field(&Node_t::key, 1),
+                                                    Field(&Node_t::key, 2),
+                                                    Field(&Node_t::key, 3),
+                                                    Field(&Node_t::key, 0),
+                                                    Field(&Node_t::key, 0),
+                                                    Field(&Node_t::key, 0),
+                                                    Field(&Node_t::key, 0)));
 
-    // ACT
-    const auto node = instance.FindNode(keyToFind);
-
-    // ASSERT
-    EXPECT_EQ(node->key, keyToFind);
-}
-
-TEST_F(NonEmptyTree, FindNode_NonExisting)
-{
-    // ARRANGE
-    const int keyToFind = 7;
-
-    // ACT
-    const auto node = instance.FindNode(keyToFind);
     
-    // ASSERT
+    // Insert a new, non-existing node:
+    keyToInsert = 5;  
+
+    resultPair = instance.InsertNode(keyToInsert); 
+    EXPECT_TRUE(resultPair.first);
+    EXPECT_NE(resultPair.second, nullptr);
+
+    EXPECT_THAT(GetLeafNodes().size(), 5);
+    EXPECT_THAT(GetAllNodes(), UnorderedElementsAre(Field(&Node_t::key, 1),
+                                                    Field(&Node_t::key, 2),
+                                                    Field(&Node_t::key, 3),
+                                                    Field(&Node_t::key, 5),
+                                                    Field(&Node_t::key, 0),
+                                                    Field(&Node_t::key, 0),
+                                                    Field(&Node_t::key, 0),
+                                                    Field(&Node_t::key, 0),
+                                                    Field(&Node_t::key, 0)));
+}
+
+TEST_F(NonEmptyTree, FindNode)
+{
+    // Find a existing node
+    int keyToFind = 3;
+
+    auto node = instance.FindNode(keyToFind);
+
+    ASSERT_NE(node, nullptr);
+    EXPECT_EQ(node->key, keyToFind);
+
+    keyToFind = 9;
+    node = instance.FindNode(keyToFind);
+
     EXPECT_EQ(node, nullptr);
 }
 
-TEST_F(NonEmptyTree, DeleteNode_Existing)
+TEST_F(NonEmptyTree, DeleteNode)
 {
-    // ARRANGE
-    const int keyToDelete = 3;
+    // Delete existing node:
+    int keyToDelete = 3;
     
-    // ACT
-    const bool deleteResult = instance.DeleteNode(keyToDelete);
+    EXPECT_TRUE(instance.DeleteNode(keyToDelete));
+    EXPECT_EQ(GetLeafNodes(), 3);
+    EXPECT_THAT(GetAllNodes(), UnorderedElementsAre(Field(&Node_t::key, 1),
+                                                    Field(&Node_t::key, 2),
+                                                    Field(&Node_t::key, 0),
+                                                    Field(&Node_t::key, 0),
+                                                    Field(&Node_t::key, 0)));
 
-    // ASSERT
-    std::vector<Node_t *> outAllNodes;
-    instance.GetAllNodes(outAllNodes);
+    // Delete a non-existing node:
+    keyToDelete = 9;
+    
+    EXPECT_FALSE(instance.DeleteNode(keyToDelete));
+    EXPECT_EQ(GetLeafNodes(), 4);
+    EXPECT_THAT(GetAllNodes(), UnorderedElementsAre(Field(&Node_t::key, 1),
+                                                    Field(&Node_t::key, 2),
+                                                    Field(&Node_t::key, 3),
+                                                    Field(&Node_t::key, 0),
+                                                    Field(&Node_t::key, 0),
+                                                    Field(&Node_t::key, 0),
+                                                    Field(&Node_t::key, 0)));
+}
 
-    //EXPECT_TRUE(deleteResult);
-    std::vector<int> actualKeys;
-    for(const auto& node: outAllNodes)
+
+//
+//
+// AXIOM TESTS
+
+// AXIOM #1
+TEST_F(NonEmptyTree, LeafsAreBlack)
+{
+    const auto leafNodes = GetLeafNodes();
+    for(const auto& leaf: leafNodes)
     {
-        actualKeys.push_back(node->key);
+        EXPECT_EQ(leaf->color, Color_t::BLACK);
+    }
+}
+
+// AXIOM #2
+TEST_F(NonEmptyTree, RedNodesChildrenAreBlack)
+{
+    const auto allNodes = GetAllNodes();
+    for(const auto& node: allNodes)
+    {
+        ASSERT_NE(node, nullptr);
+
+        if(node->color == Color_t::RED)
+        {
+            const auto leftChild = node->pLeft;
+            const auto rightChild = node->pRight;
+
+            ASSERT_NE(leftChild, nullptr);
+            ASSERT_NE(rightChild, nullptr);
+
+            EXPECT_EQ(leftChild->color, Color_t::BLACK);
+            EXPECT_EQ(rightChild->color, Color_t::BLACK);
+        }
+    }
+}
+
+// AXIOM #3
+TEST_F(NonEmptyTree, ConsistentBlackNodeCounts)
+{
+    auto leafNodes = GetLeafNodes();
+
+    std::vector<int> blackNodesCoutsAcrossPaths(leafNodes.size());     
+    int pathNum = 0; 
+
+    for(Node_t* leaf: leafNodes)
+    {
+        // for each leaf:
+
+        Node_t* current = leaf;
+
+        // climb the binary tree to the root:
+        while(current->pParent != nullptr)
+        {   
+            // count all the black nodes for each path:
+            if(current->color == Color_t::BLACK)
+            {
+                blackNodesCoutsAcrossPaths[pathNum]++;
+            }
+
+            current = current->pParent;
+        }
+        
+        ++pathNum;
     }
 
-    bool status = actualKeys.size() > 4 &&  actualKeys.size() < 6;
-    EXPECT_TRUE(status);
-    //EXPECT_THAT(actualKeys, ::testing::UnorderedElementsAre(1,2,4,5));
+    EXPECT_FALSE(blackNodesCoutsAcrossPaths.empty());
 
-    //ASSERT_EQ(outLeafNodes.size(), 4);
-    //EXPECT_EQ(outLeafNodes[0]->key, 1);
-    //EXPECT_EQ(outLeafNodes[1]->key, 2);
-    //EXPECT_EQ(outLeafNodes[2]->key, 4);
-    //EXPECT_EQ(outLeafNodes[3]->key, 5);
+    auto allSame = [](const std::vector<int> vec)
+    {
+        auto firstValue = vec[0];
+        return std::all_of(vec.begin(), vec.end(),[firstValue](int val) { return val == firstValue; });
+    };
+
+    EXPECT_TRUE(allSame(blackNodesCoutsAcrossPaths));
 }
 
 /*** Konec souboru black_box_tests.cpp ***/
